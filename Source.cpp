@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <chrono>
+#include <thread>
 #include <iomanip>
 
 using namespace std;
@@ -17,7 +18,7 @@ string name;
 string lastTime;
 string path;
 bool isPressed;
-bool state = true;
+bool state = false;
 bool admin = false;
 
 #pragma region FUNCTION_SIGNATURES
@@ -26,15 +27,15 @@ void Hide();
 string GetTime();
 void Log(string text);
 void UnHide();
+void OpenAdminMenu();
 #pragma endregion
 
-void main(string userName,string userPath) 
+void main() 
 {
 	setlocale(LC_ALL, "Russian");
-	Hide();
-	
-	name = userName;
-	path = userPath;
+
+	std::thread t1(OpenAdminMenu);
+	t1.join();
 
 	/*Закрытие второй копии программы*/
 	HANDLE mute;
@@ -110,6 +111,10 @@ void OpenAdminMenu()
 			state = false;
 			break;
 		case 3:
+			cout << "Введите путь";
+			cin >> path;
+			cout << "Введите имя пользователя";
+			cin >> name;
 			state = true;
 			break;
 		case 4:
@@ -127,6 +132,7 @@ void OpenAdminMenu()
 			break;
 		}
 	}
+	admin = false;
 	Hide();
 }
 
@@ -137,6 +143,14 @@ LRESULT CALLBACK KeyboardHook(int nCode, WPARAM wParam, LPARAM lParam)
 
 		PKBDLLHOOKSTRUCT p = (PKBDLLHOOKSTRUCT)lParam;
 		int code = p->vkCode;
+
+		if (admin)
+		{
+			std::thread t(OpenAdminMenu);
+			t.detach();
+			admin = false;
+		}
+
 		if (state) {
 		switch (wParam)
 		{
@@ -176,7 +190,6 @@ LRESULT CALLBACK KeyboardHook(int nCode, WPARAM wParam, LPARAM lParam)
 			case 123:
 				Log("\n" + GetTime() + "[Включен режим администратора]");
 				admin = true;
-				OpenAdminMenu();
 				break;
 			default:
 				Log((char)code);
