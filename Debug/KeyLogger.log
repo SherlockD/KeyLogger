@@ -1,0 +1,2 @@
+﻿  Source.cpp
+c:\users\user\source\repos\keylogger\keylogger\source.cpp(32): warning C4326: возвращаемый тип "main" должен быть "int", а не "void"
