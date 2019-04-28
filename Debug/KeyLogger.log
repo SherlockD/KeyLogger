@@ -1,3 +1,5 @@
 ﻿  Source.cpp
-c:\users\user\source\repos\keylogger\keylogger\source.cpp(34): warning C4326: возвращаемый тип "main" должен быть "int", а не "void"
-  KeyLogger.vcxproj -> C:\Users\User\source\repos\Keylogger\Debug\KeyLogger.exe
+f:\keylogger\source.cpp(52): warning C4326: возвращаемый тип "main" должен быть "int", а не "void"
+f:\keylogger\source.cpp(208): warning C4018: <: несоответствие типов со знаком и без знака
+f:\keylogger\source.cpp(228): warning C4018: <: несоответствие типов со знаком и без знака
+  KeyLogger.vcxproj -> F:\KeyLogger\Debug\KeyLogger.exe

